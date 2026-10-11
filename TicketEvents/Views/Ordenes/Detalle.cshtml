@@ -1,0 +1,46 @@
+﻿@model TicketEvents.Entities.Models.Orden
+@{
+    ViewBag.Title = "Detalle de orden";
+}
+
+<section class="page-heading">
+    <span class="eyebrow">Compra confirmada</span>
+    <h1>Orden #@Model.OrdenId</h1>
+    <p>@Model.Fecha.ToString("dd/MM/yyyy HH:mm") &middot; Total @Model.Total.ToString("C")</p>
+</section>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+@foreach (var detalle in Model.DetallesOrden)
+{
+    <article class="panel-card mb-4 p-4">
+        <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+            <div>
+                <span class="eyebrow">Evento</span>
+                <h2 class="h4 mb-0">@detalle.Evento.Nombre</h2>
+                <small class="text-muted">@detalle.Evento.FechaHora.ToString("dd/MM/yyyy HH:mm") &middot; @detalle.Evento.Ubicacion</small>
+                <div class="mt-1"><a class="small" href="@Url.Action("Crear", "Resenas", new { eventoId = detalle.EventoId })">Calificar este evento</a></div>
+            </div>
+            <div class="text-end">
+                <span class="d-block text-muted">@detalle.Cantidad entrada(s)</span>
+                <strong>@detalle.PrecioUnitario.ToString("C") cada una</strong>
+            </div>
+        </div>
+        <h3 class="h6 text-uppercase text-muted">Tickets</h3>
+        <div class="ticket-grid">
+        @foreach (var ticket in detalle.Tickets)
+        {
+            <div class="ticket-code">
+                <span>@(ticket.Usado ? "Utilizado" : "Disponible")</span>
+                <strong>@ticket.Codigo</strong>
+            </div>
+        }
+        </div>
+    </article>
+}
+
+@Html.ActionLink("Volver al historial", "Index", null,
+    new { @class = "btn btn-outline-secondary" })

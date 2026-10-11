@@ -1,0 +1,46 @@
+﻿@model IEnumerable<TicketEvents.Entities.Models.Orden>
+@using System.Linq
+@{
+    ViewBag.Title = "Mis ordenes";
+}
+
+<section class="page-heading">
+    <span class="eyebrow">Tus compras</span>
+    <h1>Historial de &oacute;rdenes</h1>
+    <p>Consulta las compras y los tickets asociados a tu cuenta.</p>
+</section>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <div class="empty-icon">TE</div>
+        <h2>A&uacute;n no tienes compras</h2>
+        @Html.ActionLink("Explorar eventos", "Index", "Evento", null,
+            new { @class = "btn btn-primary" })
+    </div>
+}
+else
+{
+    <div class="table-responsive panel-card">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr><th>N&uacute;mero</th><th>Fecha</th><th>Total</th><th></th></tr>
+            </thead>
+            <tbody>
+            @foreach (var orden in Model)
+            {
+                <tr>
+                    <td><strong>#@orden.OrdenId</strong></td>
+                    <td>@orden.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td><strong>@orden.Total.ToString("C")</strong></td>
+                    <td class="text-end">
+                        @Html.ActionLink("Ver tickets", "Detalle",
+                            new { id = orden.OrdenId },
+                            new { @class = "btn btn-sm btn-outline-primary" })
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

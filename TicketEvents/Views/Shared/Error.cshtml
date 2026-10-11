@@ -1,0 +1,12 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+@{
+    ViewBag.Title = "Error";
+}
+
+<section class="page-heading">
+    <span class="eyebrow">Algo sali&oacute; mal</span>
+    <h1>Ocurri&oacute; un error al procesar la solicitud</h1>
+    <p>El error qued&oacute; registrado. Intenta de nuevo o vuelve a la cartelera.</p>
+</section>
+<div class="alert alert-danger">Si el problema persiste, contacta al administrador.</div>
+@Html.ActionLink("Volver a la cartelera", "Index", "Evento", null, new { @class = "btn btn-primary" })

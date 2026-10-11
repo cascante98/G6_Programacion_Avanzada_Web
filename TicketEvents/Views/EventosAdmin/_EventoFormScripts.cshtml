@@ -1,0 +1,27 @@
+﻿<script>
+    $(function () {
+        var esCrear = @(ViewContext.RouteData.Values["action"].ToString() == "Create" ? "true" : "false");
+
+        // Vista previa de imágenes seleccionadas
+        $('#imagenesSubidas').on('change', function () {
+            var $p = $('#vista-previa').empty();
+            Array.prototype.forEach.call(this.files, function (f) {
+                if (!/^image\//.test(f.type)) return;
+                var url = URL.createObjectURL(f);
+                $p.append($('<img>').attr({ src: url, alt: f.name }));
+            });
+        });
+
+        // Validación adicional: mínimo 3 imágenes al crear + spinner al enviar
+        $('#form-evento').on('submit', function (e) {
+            var $form = $(this);
+            if (esCrear && $('#imagenesSubidas')[0].files.length < 3) {
+                e.preventDefault();
+                TE.toast('Debe seleccionar al menos 3 imágenes.', 'warning');
+                return;
+            }
+            if ($form.valid && !$form.valid()) return;
+            TE.cargando($form.find('button[type=submit]'), true);
+        });
+    });
+</script>

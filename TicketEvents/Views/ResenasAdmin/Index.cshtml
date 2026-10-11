@@ -1,0 +1,108 @@
+﻿@model IEnumerable<TicketEvents.Entities.Models.Resena>
+@{
+    ViewBag.Title = "Moderación de reseñas";
+    var ordenadas = Model.OrderBy(r => r.Estado == null || r.Estado == "Pendiente" ? 0 : 1).ThenByDescending(r => r.FechaCreacion).ToList();
+    var pendientes = ordenadas.Count(r => r.Estado == null || r.Estado == "Pendiente");
+}
+
+<section class="page-heading">
+    <span class="eyebrow">Administraci&oacute;n</span>
+    <h1>Moderaci&oacute;n de rese&ntilde;as</h1>
+    <p>Aprueba o rechaza sin recargar la p&aacute;gina (PUT /api/resenas/{id}/aprobar | rechazar). <strong id="contador-pendientes">@pendientes</strong> pendiente(s).</p>
+</section>
+
+@if (!ordenadas.Any())
+{
+    <div class="empty-state"><div class="empty-icon">OK</div><h2>No hay rese&ntilde;as</h2><p>Las rese&ntilde;as enviadas por los asociados aparecer&aacute;n aqu&iacute;.</p></div>
+}
+else
+{
+    <div class="panel-card table-responsive">
+        <table class="table align-middle mb-0">
+            <thead><tr><th>Evento</th><th>Usuario</th><th>Calificaci&oacute;n</th><th>Comentario</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+                @foreach (var item in ordenadas)
+                {
+                    var estado = item.Estado ?? "Pendiente";
+                    var color = estado == "Aprobada" ? "success" : estado == "Rechazada" ? "danger" : "warning";
+                    <tr id="resena-@item.ResenaId">
+                        <td>@(item.Evento == null ? "-" : item.Evento.Nombre)</td>
+                        <td>@(item.Usuario == null ? "-" : item.Usuario.Nombre)</td>
+                        <td class="stars">@(new string('★', item.Calificacion))</td>
+                        <td>@item.Comentario</td>
+                        <td><span class="badge text-bg-@color estado">@estado</span></td>
+                        <td class="text-nowrap acciones">
+                            @if (estado == "Pendiente")
+                            {
+                                <button type="button" class="btn btn-sm btn-success moderar" data-id="@item.ResenaId" data-accion="aprobar">Aprobar</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger moderar" data-id="@item.ResenaId" data-accion="rechazar">Rechazar</button>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Moderada</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@* Modal de confirmación *@
+<div class="modal fade" id="moderarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar moderaci&oacute;n</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="moderar-texto"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="moderar-confirmar" class="btn btn-primary">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(function () {
+            var modalEl = document.getElementById('moderarModal'), pendiente = null;
+
+            $(document).on('click', '.moderar', function () {
+                var $b = $(this);
+                pendiente = { id: $b.data('id'), accion: $b.data('accion') };
+                var evento = $('#resena-' + pendiente.id + ' td:first').text();
+                $('#moderar-texto').text('¿Deseas ' + pendiente.accion + ' la reseña sobre "' + evento + '"?' +
+                    (pendiente.accion === 'aprobar' ? ' Será visible públicamente en el detalle del evento.' : ''));
+                $('#moderar-confirmar').toggleClass('btn-danger', pendiente.accion === 'rechazar').toggleClass('btn-primary', pendiente.accion !== 'rechazar');
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            });
+
+            $('#moderar-confirmar').on('click', function () {
+                if (!pendiente) return;
+                var $b = $(this), p = pendiente;
+                TE.cargando($b, true);
+                $.ajax({ url: TE.api('resenas/' + p.id + '/' + p.accion), method: 'PUT' })
+                    .done(function (r) {
+                        var $fila = $('#resena-' + p.id);
+                        $fila.find('.estado').text(r.estado)
+                            .removeClass('text-bg-warning').addClass(r.estado === 'Aprobada' ? 'text-bg-success' : 'text-bg-danger');
+                        $fila.find('.acciones').html('<span class="text-muted small">Moderada</span>');
+                        var $c = $('#contador-pendientes'); $c.text(Math.max(0, parseInt($c.text(), 10) - 1));
+                        TE.toast(r.mensaje, r.estado === 'Aprobada' ? 'success' : 'warning');
+                    })
+                    .fail(function (xhr) { TE.toast(TE.mensajeError(xhr, 'No fue posible moderar la reseña.'), 'danger'); })
+                    .always(function () {
+                        TE.cargando($b, false);
+                        bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                        pendiente = null;
+                    });
+            });
+        });
+    </script>
+}

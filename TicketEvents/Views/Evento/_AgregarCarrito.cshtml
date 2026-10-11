@@ -1,0 +1,32 @@
+﻿@model TicketEvents.Entities.Models.Evento
+@* Formulario de compra según el rol: Asociado agrega vía AJAX (POST api/carrito),
+   visitante debe iniciar sesión y Administrador no compra. *@
+@if (Model.EntradasDisponibles <= 0)
+{
+    <span class="badge bg-danger p-2 mt-auto">Entradas agotadas</span>
+}
+else if (User.IsInRole("Asociado"))
+{
+    <form class="form-agregar-carrito mt-auto" novalidate>
+        <input type="hidden" name="EventoId" value="@Model.EventoId" />
+        <div class="input-group mb-2">
+            <label class="input-group-text" for="cantidad-@Model.EventoId">Cantidad</label>
+            <input id="cantidad-@Model.EventoId" name="Cantidad" type="number" value="1" min="1"
+                   max="20" class="form-control" required />
+        </div>
+        <button type="submit" class="btn btn-primary w-100">
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            Agregar al carrito
+        </button>
+        <div class="form-text">Máximo 20 entradas por evento. El aforo se confirma al pagar.</div>
+    </form>
+}
+else if (User.IsInRole("Administrador"))
+{
+    <a class="btn btn-outline-secondary w-100 mt-auto" href="@Url.Action("Edit", "EventosAdmin", new { id = Model.EventoId })">Editar evento</a>
+}
+else
+{
+    <a class="btn btn-outline-primary w-100 mt-auto"
+       href="@Url.Action("Login", "Account", new { returnUrl = Url.Action("Index", "Evento") })">Inicia sesión para comprar</a>
+}

@@ -1,0 +1,122 @@
+﻿@model IEnumerable<TicketEvents.ViewModels.CarritoItemViewModel>
+@using System.Linq
+@{
+    ViewBag.Title = "Carrito";
+}
+
+<section class="page-heading">
+    <span class="eyebrow">Tu selecci&oacute;n</span>
+    <h1>Mi carrito</h1>
+    <p>Revisa las entradas antes de confirmar. El aforo se valida al confirmar la compra.</p>
+</section>
+
+<div id="carrito-vacio" class="empty-state @(Model.Any() ? "d-none" : "")">
+    <div class="empty-icon">TE</div>
+    <h2>El carrito est&aacute; vac&iacute;o</h2>
+    <p>Selecciona entradas desde la cartelera para comenzar.</p>
+    @Html.ActionLink("Ir a la cartelera", "Index", "Evento", null, new { @class = "btn btn-primary" })
+</div>
+
+@if (Model.Any())
+{
+    <div id="carrito-contenido">
+        <div class="table-responsive panel-card">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr><th>Evento</th><th>Fecha</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr id="fila-@item.EventoId">
+                            <td><strong>@item.Nombre</strong></td>
+                            <td>@item.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.Cantidad</td>
+                            <td>@item.PrecioUnitario.ToString("C")</td>
+                            <td><strong>@item.Subtotal.ToString("C")</strong></td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger quitar-item" data-id="@item.EventoId">
+                                    <span class="spinner-border spinner-border-sm d-none"></span> Quitar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="4" class="text-end">Total</th>
+                        <th id="carrito-total" class="event-price">@Model.Sum(x => x.Subtotal).ToString("C")</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="d-flex flex-wrap justify-content-between gap-3 mt-4">
+            @Html.ActionLink("Seguir comprando", "Index", "Evento", null, new { @class = "btn btn-outline-secondary" })
+            <button type="button" id="confirmar-compra" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#compraModal">Confirmar compra</button>
+        </div>
+    </div>
+}
+
+@* Modal de confirmación (Bootstrap) *@
+<div class="modal fade" id="compraModal" tabindex="-1" aria-labelledby="compraModalTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="compraModalTitulo">Confirmar compra</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                Total a pagar: <strong id="modal-total">@Model.Sum(x => x.Subtotal).ToString("C")</strong>.<br />
+                Se validar&aacute; el aforo de todos los eventos en una sola transacci&oacute;n y se generar&aacute; un ticket &uacute;nico por entrada.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="comprar-ahora" class="btn btn-primary">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Comprar ahora
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(function () {
+            var modalEl = document.getElementById('compraModal');
+
+            // Quitar del carrito: DELETE api/carrito/{id}
+            $(document).on('click', '.quitar-item', function () {
+                var $b = $(this), id = $b.data('id');
+                TE.cargando($b, true);
+                $.ajax({ url: TE.api('carrito/' + id), method: 'DELETE' })
+                    .done(function (r) {
+                        $('#fila-' + id).remove();
+                        TE.actualizarCarrito(r.totalEntradas);
+                        $('#carrito-total, #modal-total').text(TE.moneda(r.total));
+                        if (!r.totalEntradas) { $('#carrito-contenido').remove(); $('#carrito-vacio').removeClass('d-none'); }
+                        TE.toast(r.mensaje, 'info');
+                    })
+                    .fail(function (xhr) { TE.cargando($b, false); TE.toast(TE.mensajeError(xhr, 'No fue posible quitar el evento.'), 'danger'); });
+            });
+
+            // Confirmar compra: POST api/compras (el servidor toma el carrito de la sesión)
+            $('#comprar-ahora').on('click', function () {
+                var $b = $(this);
+                TE.cargando($b, true);
+                $.ajax({ url: TE.api('compras'), method: 'POST' })
+                    .done(function (r) {
+                        bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                        TE.toast(r.mensaje, 'success');
+                        TE.actualizarCarrito(0);
+                        setTimeout(function () { location.href = '@Url.Action("FinalizadaApi", "Compra")?id=' + r.ordenId; }, 900);
+                    })
+                    .fail(function (xhr) {
+                        bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                        TE.toast(TE.mensajeError(xhr, 'No fue posible completar la compra.'), 'danger');
+                        TE.cargando($b, false);
+                    });
+            });
+        });
+    </script>
+}

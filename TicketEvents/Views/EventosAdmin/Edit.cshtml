@@ -1,0 +1,68 @@
+﻿@model TicketEvents.Entities.Models.Evento
+@{
+    ViewBag.Title = "Editar evento";
+    var vendidas = Model.AforoTotal - Model.EntradasDisponibles;
+}
+
+<section class="page-heading">
+    <span class="eyebrow">Administraci&oacute;n de eventos &middot; @Model.Codigo</span>
+    <h1>Editar evento</h1>
+</section>
+
+@using (Html.BeginForm("Edit", "EventosAdmin", FormMethod.Post, new { enctype = "multipart/form-data", id = "form-evento" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.EventoId)
+    @Html.HiddenFor(m => m.RowVersion)
+
+    <div class="panel-card p-4">
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+        @if (Model.Imagenes != null && Model.Imagenes.Any())
+        {
+            <div class="mb-4">
+                <h2 class="h6">Im&aacute;genes guardadas (@Model.Imagenes.Count)</h2>
+                <div class="admin-image-grid">
+                    @foreach (var imagen in Model.Imagenes)
+                    {
+                        <img src="@Url.Action("Imagen", "Evento", new { id = imagen.ImagenId })" alt="Imagen guardada del evento" />
+                    }
+                </div>
+            </div>
+        }
+
+        @Html.Partial("_EventoCampos", Model)
+
+        <div class="row g-3 mt-1">
+            <div class="col-md-6">
+                <label class="form-label">Entradas disponibles</label>
+                <input type="text" class="form-control" value="@Model.EntradasDisponibles (vendidas: @vendidas)" readonly />
+                <div class="form-text">Se recalculan autom&aacute;ticamente si cambia el aforo. El aforo no puede ser menor a lo vendido.</div>
+            </div>
+            <div class="col-md-6 d-flex align-items-center">
+                <div class="form-check form-switch mt-4">
+                    @Html.CheckBoxFor(m => m.Estado, new { @class = "form-check-input", role = "switch" })
+                    @Html.LabelFor(m => m.Estado, new { @class = "form-check-label" })
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <label class="form-label" for="imagenesSubidas">Agregar im&aacute;genes (opcional)</label>
+            <input type="file" name="imagenesSubidas" id="imagenesSubidas" multiple accept="image/jpeg,image/png,image/gif" class="form-control" />
+            <div class="form-text">Las im&aacute;genes nuevas se agregan a las existentes.</div>
+            <div id="vista-previa" class="admin-image-grid"></div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Guardar cambios
+            </button>
+            @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-outline-secondary" })
+        </div>
+    </div>
+}
+
+@section scripts {
+    @Html.Partial("_EventoFormScripts")
+}

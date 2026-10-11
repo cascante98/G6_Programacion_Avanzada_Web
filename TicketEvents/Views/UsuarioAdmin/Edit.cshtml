@@ -1,0 +1,33 @@
+﻿@model TicketEvents.Entities.Models.Usuario
+@{ ViewBag.Title = "Editar usuario"; }
+
+<section class="page-heading"><span class="eyebrow">Administraci&oacute;n</span><h1>Editar usuario</h1></section>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
+    <div class="panel-card p-4">
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+        <div class="mb-3">
+            @Html.LabelFor(m => m.Nombre, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Nombre, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Nombre, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="Email">Correo electr&oacute;nico</label>
+            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", data_val = "true", data_val_required = "El correo es obligatorio." })
+            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="rol">Rol</label>
+            @Html.DropDownList("rol", (SelectList)ViewBag.RolesDisponibles, new { @class = "form-select" })
+        </div>
+        <div class="form-check form-switch mb-3">
+            @Html.CheckBoxFor(m => m.Estado, new { @class = "form-check-input", role = "switch" })
+            <label class="form-check-label" for="Estado">Usuario activo (si se desactiva, no podr&aacute; iniciar sesi&oacute;n)</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-outline-secondary" })
+    </div>
+}

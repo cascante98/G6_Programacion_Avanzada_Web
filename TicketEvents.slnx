@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="TicketEvents.Entities/TicketEvents.Entities.csproj" Id="813340ef-c4e4-487b-8e05-7b8552d45880" />
+  <Project Path="TicketEvents.Repository/TicketEvents.Repository.csproj" Id="7f25ef2f-f6ea-48ad-bc4e-2526d02128f7" />
+  <Project Path="TicketEvents.Services/TicketEvents.Services.csproj" Id="2faf2ae8-536d-447f-b88a-0f93548f5319" />
+  <Project Path="TicketEvents/TicketEvents.csproj" Id="c8bf9215-e29e-4fc3-ab4e-97eb0c973306" />
+</Solution>

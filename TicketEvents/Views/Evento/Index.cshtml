@@ -1,0 +1,27 @@
+﻿@model IEnumerable<TicketEvents.Entities.Models.Evento>
+@{
+    ViewBag.Title = "Cartelera";
+}
+
+<section class="catalog-heading">
+    <span class="eyebrow">Experiencias para recordar</span>
+    <h1>Cartelera de eventos</h1>
+    <p>Explora los eventos disponibles. @(User.IsInRole("Asociado") ? "Agrega entradas al carrito sin salir de la página." : "")</p>
+</section>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <h2>No hay eventos activos</h2>
+        <p>Los eventos publicados por el administrador aparecer&aacute;n aqu&iacute;.</p>
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var evento in Model)
+        {
+            @Html.Partial("_EventoCard", evento)
+        }
+    </div>
+}

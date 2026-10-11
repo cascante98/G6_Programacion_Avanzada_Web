@@ -1,0 +1,159 @@
+﻿@{ ViewBag.Title = "Dashboard"; }
+
+<section class="page-heading d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div>
+        <span class="eyebrow">Panel del administrador</span>
+        <h1>Dashboard</h1>
+        <p class="mb-0">Estad&iacute;sticas y gr&aacute;ficos cargados de forma as&iacute;ncrona desde la Web API interna (GET /api/dashboard/...).</p>
+    </div>
+    <button type="button" id="btn-actualizar" class="btn btn-outline-primary">
+        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Actualizar
+    </button>
+</section>
+
+<div id="dashboard-spinner" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2">Cargando indicadores...</p>
+</div>
+<div id="dashboard-error" class="alert alert-danger d-none">No fue posible cargar las estad&iacute;sticas.</div>
+
+<div id="dashboard-contenido" class="d-none">
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-4 col-xl-2"><div class="panel-card kpi p-3"><span>Usuarios registrados</span><h2 id="kpi-usuarios">-</h2><small id="kpi-usuarios-detalle" class="text-muted"></small></div></div>
+        <div class="col-6 col-lg-4 col-xl-2"><div class="panel-card kpi p-3"><span>Eventos en cartelera</span><h2 id="kpi-cartelera">-</h2><small id="kpi-eventos-total" class="text-muted"></small></div></div>
+        <div class="col-6 col-lg-4 col-xl-2"><div class="panel-card kpi p-3"><span>Pr&oacute;ximos 30 d&iacute;as</span><h2 id="kpi-proximos">-</h2></div></div>
+        <div class="col-6 col-lg-4 col-xl-2"><div class="panel-card kpi kpi-alerta p-3"><span>Por agotarse</span><h2 id="kpi-bajo-aforo">-</h2><small class="text-muted">&le; 10&nbsp;% del aforo</small></div></div>
+        <div class="col-6 col-lg-4 col-xl-2"><div class="panel-card kpi p-3"><span>Entradas vendidas</span><h2 id="kpi-entradas">-</h2><small id="kpi-ordenes" class="text-muted"></small></div></div>
+        <div class="col-6 col-lg-4 col-xl-2"><div class="panel-card kpi p-3"><span>Ingresos</span><h2 id="kpi-ingresos" class="kpi-moneda">-</h2></div></div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="panel-card p-4 h-100">
+                <h2 class="h5">Entradas vendidas e ingresos por evento</h2>
+                <div class="chart-box"><canvas id="chartEventos"></canvas></div>
+                <p id="sin-ventas-evento" class="text-muted d-none mb-0">A&uacute;n no hay ventas registradas.</p>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="panel-card p-4 h-100">
+                <h2 class="h5">Entradas vendidas en la &uacute;ltima semana</h2>
+                <div class="chart-box"><canvas id="chartSemana"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-card mb-4">
+        <div class="p-4 pb-2"><h2 class="h5 mb-0">Eventos pr&oacute;ximos a agotarse</h2></div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead><tr><th>C&oacute;digo</th><th>Evento</th><th>Fecha</th><th>Disponibles</th><th></th></tr></thead>
+                <tbody id="tabla-bajo-aforo"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="@Url.Content("~/Scripts/chart.umd.js")"></script>
+    <script>
+        $(function () {
+            var graficoEventos = null, graficoSemana = null;
+            var urlEditar = '@Url.Action("Edit", "EventosAdmin")/';
+
+            function escapar(t) { return $('<div>').text(t == null ? '' : t).html(); }
+
+            function pintarEstadisticas(e) {
+                $('#kpi-usuarios').text(e.TotalUsuarios);
+                $('#kpi-usuarios-detalle').text(e.UsuariosActivos + ' activos · ' + e.UsuariosInactivos + ' inactivos');
+                $('#kpi-cartelera').text(e.EventosEnCartelera);
+                $('#kpi-eventos-total').text(e.TotalEventos + ' eventos en total');
+                $('#kpi-proximos').text(e.EventosProximos);
+                $('#kpi-bajo-aforo').text(e.EventosBajoAforo);
+                $('#kpi-entradas').text(e.EntradasVendidas);
+                $('#kpi-ordenes').text(e.TotalOrdenes + ' órdenes');
+                $('#kpi-ingresos').text(TE.moneda(e.IngresosTotales));
+            }
+
+            function pintarEventos(datos) {
+                $('#sin-ventas-evento').toggleClass('d-none', datos.length > 0);
+                if (graficoEventos) graficoEventos.destroy();
+                graficoEventos = new Chart(document.getElementById('chartEventos'), {
+                    type: 'bar',
+                    data: {
+                        labels: datos.map(function (d) { return d.EventoNombre.length > 24 ? d.EventoNombre.substring(0, 22) + '…' : d.EventoNombre; }),
+                        datasets: [
+                            { label: 'Entradas', data: datos.map(function (d) { return d.EntradasVendidas; }), backgroundColor: '#6d4aff', yAxisID: 'y' },
+                            { label: 'Ingresos (₡)', data: datos.map(function (d) { return d.TotalIngresos; }), backgroundColor: '#3e8bff', yAxisID: 'y1' }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Entradas' }, ticks: { precision: 0 } },
+                            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Ingresos' } }
+                        },
+                        plugins: { tooltip: { callbacks: { label: function (c) { return c.dataset.yAxisID === 'y1' ? 'Ingresos: ' + TE.moneda(c.raw) : 'Entradas: ' + c.raw; } } } }
+                    }
+                });
+            }
+
+            function pintarSemana(datos) {
+                if (graficoSemana) graficoSemana.destroy();
+                graficoSemana = new Chart(document.getElementById('chartSemana'), {
+                    type: 'line',
+                    data: {
+                        labels: datos.map(function (d) { return d.Fecha; }),
+                        datasets: [{ label: 'Entradas', data: datos.map(function (d) { return d.Entradas; }), borderColor: '#6d4aff', backgroundColor: 'rgba(109,74,255,.15)', fill: true, tension: .3 }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                        plugins: { legend: { display: false }, tooltip: { callbacks: { afterLabel: function (c) { return 'Ingresos: ' + TE.moneda(datos[c.dataIndex].Total); } } } }
+                    }
+                });
+            }
+
+            function pintarBajoAforo(datos) {
+                var $t = $('#tabla-bajo-aforo').empty();
+                if (!datos.length) {
+                    $t.append('<tr><td colspan="5" class="text-muted">No hay eventos próximos a agotarse.</td></tr>');
+                    return;
+                }
+                datos.forEach(function (e) {
+                    $t.append('<tr><td>' + escapar(e.Codigo) + '</td><td><strong>' + escapar(e.Nombre) + '</strong></td><td>' + escapar(e.FechaHora) +
+                        '</td><td><span class="badge text-bg-warning">' + e.EntradasDisponibles + ' / ' + e.AforoTotal + '</span></td>' +
+                        '<td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="' + urlEditar + e.EventoId + '">Editar</a></td></tr>');
+                });
+            }
+
+            function cargar(esActualizacion) {
+                var $b = $('#btn-actualizar');
+                TE.cargando($b, true);
+                $('#dashboard-error').addClass('d-none');
+
+                $.when(
+                    $.getJSON(TE.api('dashboard/estadisticas')),
+                    $.getJSON(TE.api('dashboard/ventas-por-evento')),
+                    $.getJSON(TE.api('dashboard/ventas-por-semana')),
+                    $.getJSON(TE.api('dashboard/bajo-aforo'))
+                ).done(function (est, eventos, semana, bajo) {
+                    $('#dashboard-contenido').removeClass('d-none');
+                    pintarEstadisticas(est[0]);
+                    pintarEventos(eventos[0]);
+                    pintarSemana(semana[0]);
+                    pintarBajoAforo(bajo[0]);
+                    if (esActualizacion) TE.toast('Dashboard actualizado.', 'success');
+                }).fail(function (xhr) {
+                    $('#dashboard-error').removeClass('d-none').text(TE.mensajeError(xhr, 'No fue posible cargar las estadísticas.'));
+                }).always(function () {
+                    $('#dashboard-spinner').addClass('d-none');
+                    TE.cargando($b, false);
+                });
+            }
+
+            $('#btn-actualizar').on('click', function () { cargar(true); });
+            cargar(false);
+        });
+    </script>
+}

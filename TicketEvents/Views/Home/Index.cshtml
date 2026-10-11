@@ -1,0 +1,54 @@
+﻿@{
+    ViewBag.Title = "Inicio";
+}
+
+<main class="home-page">
+    <section class="hero">
+        <div class="hero-content">
+            <span class="eyebrow hero-eyebrow">Eventos, experiencias y recuerdos</span>
+            <h1>Tu pr&oacute;ximo gran evento comienza aqu&iacute;.</h1>
+            <p>
+                Descubre actividades, reserva tus entradas y conserva todos
+                tus tickets en un solo lugar.
+            </p>
+            <div class="hero-actions">
+                @Html.ActionLink("Explorar cartelera", "Index", "Evento", null,
+                    new { @class = "btn btn-light btn-lg" })
+                @if (User.IsInRole("Asociado"))
+                {
+                    @Html.ActionLink("Ver mi carrito", "Index", "Carrito", null, new { @class = "btn btn-outline-light btn-lg" })
+                }
+                else if (User.IsInRole("Administrador"))
+                {
+                    @Html.ActionLink("Ir al dashboard", "Dashboard", "EventosAdmin", null, new { @class = "btn btn-outline-light btn-lg" })
+                }
+                else if (!User.Identity.IsAuthenticated)
+                {
+                    @Html.ActionLink("Crear cuenta", "Register", "Account", null, new { @class = "btn btn-outline-light btn-lg" })
+                }
+            </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+            <div class="ticket-shape ticket-one">TE</div>
+            <div class="ticket-shape ticket-two">2026</div>
+        </div>
+    </section>
+
+    <section class="home-features">
+        <article class="home-feature">
+            <span>01</span>
+            <h2>Encuentra eventos</h2>
+            <p>Consulta fecha, lugar, precio y disponibilidad en la cartelera.</p>
+        </article>
+        <article class="home-feature">
+            <span>02</span>
+            <h2>Compra con seguridad</h2>
+            <p>El sistema verifica el aforo al momento de confirmar la compra.</p>
+        </article>
+        <article class="home-feature">
+            <span>03</span>
+            <h2>Conserva tus tickets</h2>
+            <p>Revisa tus &oacute;rdenes y c&oacute;digos desde tu historial personal.</p>
+        </article>
+    </section>
+</main>

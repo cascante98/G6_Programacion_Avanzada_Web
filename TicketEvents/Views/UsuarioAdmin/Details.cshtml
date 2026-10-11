@@ -1,0 +1,42 @@
+﻿@model TicketEvents.Entities.Models.Usuario
+@{
+    ViewBag.Title = "Detalles del Usuario";
+}
+
+<h2>Detalles del Usuario</h2>
+<hr />
+
+<dl class="dl-horizontal">
+    <dt>Código de usuario</dt>
+    <dd><code>@Model.Id</code></dd>
+
+    <dt>Rol</dt>
+    <dd>@ViewBag.Rol</dd>
+
+    <dt>Nombre</dt>
+    <dd>@Model.Nombre</dd>
+
+    <dt>Email</dt>
+    <dd>@Model.Email</dd>
+
+    <dt>Estado</dt>
+    <dd>
+        @if (Model.Estado)
+        {
+            <span class="badge bg-success">Activo</span>
+        }
+        else
+        {
+            <span class="badge bg-danger">Inactivo</span>
+        }
+    </dd>
+
+    <dt>Última Conexión</dt>
+    <dd>@(Model.UltimaConexion.HasValue ? Model.UltimaConexion.Value.ToString("dd/MM/yyyy HH:mm") : "Sin conexión")</dd>
+
+</dl>
+
+<p>
+    @Html.ActionLink("Editar", "Edit", new { id = Model.Id }, new { @class = "btn btn-warning" })
+    @Html.ActionLink("Volver", "Index", null, new { @class = "btn btn-secondary" })
+</p>

@@ -1,0 +1,39 @@
+﻿@model TicketEvents.Entities.Models.Usuario
+@{
+    ViewBag.Title = "Eliminar Usuario";
+}
+
+<h2>Eliminar Usuario</h2>
+
+<h3>¿Está seguro de que desea eliminar este usuario?</h3>
+
+<dl class="dl-horizontal">
+    <dt>Nombre</dt>
+    <dd>@Model.Nombre</dd>
+
+    <dt>Email</dt>
+    <dd>@Model.Email</dd>
+
+    <dt>Estado</dt>
+    <dd>
+        @if (Model.Estado)
+        {
+            <span class="badge bg-success">Activo</span>
+        }
+        else
+        {
+            <span class="badge bg-danger">Inactivo</span>
+        }
+    </dd>
+</dl>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
+
+    <div class="form-actions no-color">
+        <input type="submit" value="Eliminar" class="btn btn-danger" />
+        @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-secondary" })
+    </div>
+}

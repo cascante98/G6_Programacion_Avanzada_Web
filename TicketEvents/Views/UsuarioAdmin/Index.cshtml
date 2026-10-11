@@ -1,0 +1,66 @@
+﻿@model System.Collections.Generic.List<TicketEvents.Entities.Models.Usuario>
+@{
+    ViewBag.Title = "Administración de Usuarios";
+    var roles = ViewBag.Roles as System.Collections.Generic.Dictionary<string, string> ?? new System.Collections.Generic.Dictionary<string, string>();
+}
+
+@{
+    var mensajeError = TempData["Error"] as string;
+    var mensajeExito = TempData["Mensaje"] as string;
+}
+
+@if (!string.IsNullOrEmpty(mensajeExito))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @mensajeExito
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    TempData.Remove("Mensaje");
+}
+
+@if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @mensajeError
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    TempData.Remove("Error");
+}
+
+<h2>Administración de Usuarios</h2>
+<p>@Html.ActionLink("Crear usuario", "Create", null, new { @class = "btn btn-primary" })</p>
+
+<div class="panel-card table-responsive"><table class="table align-middle mb-0">
+    <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th>Última Conexión</th>
+        <th>Acciones</th>
+    </tr>
+    @foreach (var usuario in Model)
+    {
+        <tr>
+            <td>@usuario.Nombre</td>
+            <td>@usuario.Email</td>
+            <td>@(roles.ContainsKey(usuario.Id) ? roles[usuario.Id] : "")</td>
+            <td>
+                @if (usuario.Estado)
+                {
+                    <span class="badge bg-success">Activo</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">Inactivo</span>
+                }
+            </td>
+            <td>@(usuario.UltimaConexion.HasValue ? usuario.UltimaConexion.Value.ToString("dd/MM/yyyy HH:mm") : "Sin conexión")</td>
+            <td>
+                @Html.ActionLink("Detalles", "Details", new { id = usuario.Id }, new { @class = "btn btn-sm btn-info" })
+                @Html.ActionLink("Editar", "Edit", new { id = usuario.Id }, new { @class = "btn btn-sm btn-warning" })
+                @Html.ActionLink("Eliminar", "Delete", new { id = usuario.Id }, new { @class = "btn btn-sm btn-danger" })
+            </td>
+        </tr>
+    }
+</table></div>

@@ -1,0 +1,89 @@
+﻿@using TicketEvents.Helpers
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - TicketEvents</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body data-app-root="@Url.Content("~/")">
+    @{ var esAsociado = User.IsInRole("Asociado"); var esAdmin = User.IsInRole("Administrador"); }
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            @Html.ActionLink("TicketEvents", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" title="Alternar navegación"
+                    aria-controls="menuPrincipal" aria-expanded="false" aria-label="Alternar navegación">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menuPrincipal">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item">@Html.ActionLink("Cartelera", "Index", "Evento", new { area = "" }, new { @class = "nav-link" })</li>
+
+                    @if (esAsociado)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "Carrito")">
+                                Carrito
+                                @{ var enCarrito = CarritoSesion.TotalEntradas(Session); }
+                                <span id="carrito-badge" class="badge rounded-pill bg-primary @(enCarrito == 0 ? "d-none" : "")">@enCarrito</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">@Html.ActionLink("Mis órdenes", "Index", "Ordenes", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li class="nav-item">@Html.ActionLink("Calificar evento", "Crear", "Resenas", new { area = "" }, new { @class = "nav-link" })</li>
+                    }
+                    @if (esAdmin)
+                    {
+                        <li class="nav-item">@Html.ActionLink("Dashboard", "Dashboard", "EventosAdmin", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li class="nav-item">@Html.ActionLink("Eventos", "Index", "EventosAdmin", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li class="nav-item">@Html.ActionLink("Usuarios", "Index", "UsuariosAdmin", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li class="nav-item">@Html.ActionLink("Reseñas", "Index", "ResenasAdmin", new { area = "" }, new { @class = "nav-link" })</li>
+                    }
+                    <li class="nav-item">@Html.ActionLink("Acerca de", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Contacto", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item"><span class="nav-link nav-user">@User.Identity.Name</span></li>
+                        <li class="nav-item">
+                            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "d-inline" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <a href="javascript:document.getElementById('logoutForm').submit()" class="nav-link">Cerrar sesión</a>
+                            }
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">@Html.ActionLink("Iniciar sesión", "Login", "Account", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li class="nav-item">@Html.ActionLink("Registrarse", "Register", "Account", new { area = "" }, new { @class = "nav-link" })</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container body-content">
+        @RenderBody()
+        <footer class="site-footer">
+            <p class="mb-0">&copy; @DateTime.Now.Year TicketEvents</p>
+        </footer>
+    </div>
+
+    @* Toast global reutilizado por todas las operaciones AJAX (TE.toast en ticketevents.js) *@
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="appToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div id="appToastTexto" class="toast-body"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/app")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

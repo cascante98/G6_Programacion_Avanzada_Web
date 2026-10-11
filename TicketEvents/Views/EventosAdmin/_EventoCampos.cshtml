@@ -1,0 +1,50 @@
+﻿@model TicketEvents.Entities.Models.Evento
+@using System.Globalization
+@* Campos comunes a Crear y Editar. Las reglas data-val-* activan la validación con jQuery
+   (unobtrusive); las mismas reglas se validan en el servidor con Data Annotations e IValidatableObject. *@
+<div class="row g-3">
+    <div class="col-md-8">
+        @Html.LabelFor(m => m.Nombre, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Nombre, new { @class = "form-control", maxlength = "150" })
+        @Html.ValidationMessageFor(m => m.Nombre, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-md-4">
+        @Html.LabelFor(m => m.Categoria, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Categoria, new { @class = "form-control", list = "categorias", data_val = "true", data_val_required = "La categoría es obligatoria." })
+        <datalist id="categorias">
+            <option value="Concierto"></option><option value="Taller"></option><option value="Charla"></option>
+            <option value="Teatro"></option><option value="Deportes"></option><option value="Tecnología"></option><option value="Música"></option>
+        </datalist>
+        @Html.ValidationMessageFor(m => m.Categoria, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-12">
+        @Html.LabelFor(m => m.Descripcion, new { @class = "form-label" })
+        @Html.TextAreaFor(m => m.Descripcion, new { @class = "form-control", rows = 3, data_val = "true", data_val_required = "La descripción es obligatoria." })
+        @Html.ValidationMessageFor(m => m.Descripcion, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-md-6">
+        @Html.LabelFor(m => m.FechaHora, new { @class = "form-label" })
+        <input type="datetime-local" name="FechaHora" id="FechaHora" class="form-control"
+               value="@(Model != null && Model.FechaHora != DateTime.MinValue ? Model.FechaHora.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture) : "")"
+               data-val="true" data-val-required="La fecha y hora son obligatorias." />
+        @Html.ValidationMessageFor(m => m.FechaHora, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-md-6">
+        @Html.LabelFor(m => m.Ubicacion, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Ubicacion, new { @class = "form-control", data_val = "true", data_val_required = "El lugar o recinto es obligatorio." })
+        @Html.ValidationMessageFor(m => m.Ubicacion, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-md-6">
+        <label class="form-label" for="Precio">Precio (₡)</label>
+        <input type="number" name="Precio" id="Precio" class="form-control" min="1" step="1"
+               value="@(Model != null && Model.Precio > 0 ? Model.Precio.ToString("0", CultureInfo.InvariantCulture) : "")"
+               data-val="true" data-val-required="El precio es obligatorio."
+               data-val-range="El precio debe estar entre 1 y 10 000 000." data-val-range-min="1" data-val-range-max="10000000" />
+        @Html.ValidationMessageFor(m => m.Precio, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-md-6">
+        @Html.LabelFor(m => m.AforoTotal, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.AforoTotal, new { @class = "form-control", type = "number", min = "1" })
+        @Html.ValidationMessageFor(m => m.AforoTotal, "", new { @class = "text-danger" })
+    </div>
+</div>

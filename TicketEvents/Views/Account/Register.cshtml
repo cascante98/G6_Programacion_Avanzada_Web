@@ -1,0 +1,38 @@
+﻿@model TicketEvents.Controllers.RegisterViewModel
+
+@{
+    ViewBag.Title = "Registrarse";
+}
+
+<h2>@ViewBag.Title.</h2>
+
+@using (Html.BeginForm("Register", "Account", FormMethod.Post, new { role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    <h4>Crea una nueva cuenta.</h4>
+    <hr />
+    @Html.ValidationSummary("", new { @class = "text-danger" })
+    <div class="form-group row mb-3">
+        @Html.LabelFor(m => m.Nombre, new { @class = "col-md-2 col-form-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.Nombre, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group row mb-3">
+        @Html.LabelFor(m => m.Email, new { @class = "col-md-2 col-form-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group row mb-3">
+        @Html.LabelFor(m => m.Password, new { @class = "col-md-2 col-form-label" })
+        <div class="col-md-10">
+            @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="offset-md-2 col-md-10">
+            <input type="submit" value="Registrarse" class="btn btn-primary" />
+        </div>
+    </div>
+}

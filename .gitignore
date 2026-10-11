@@ -1,0 +1,21 @@
+# Visual Studio / .NET Framework
+.vs/
+bin/
+obj/
+packages/
+*.user
+*.suo
+*.userprefs
+*.cache
+*.log
+[Dd]ebug/
+[Rr]elease/
+TestResults/
+
+# Bases de datos locales
+App_Data/*.mdf
+App_Data/*.ldf
+
+# Sistema operativo
+Thumbs.db
+.DS_Store

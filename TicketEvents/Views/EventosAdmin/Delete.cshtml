@@ -1,0 +1,67 @@
+﻿@model TicketEvents.Entities.Models.Evento
+
+@{
+    ViewBag.Title = "Eliminar Evento";
+}
+
+<h2>Eliminar Evento</h2>
+
+<h3>¿Está seguro de que desea eliminar este evento?</h3>
+<div class="alert alert-warning">Si el evento ya tiene entradas vendidas no se borrará: se marcará como <strong>Inactivo</strong> para conservar el historial de órdenes y tickets.</div>
+<div>
+    <h4>Detalles del Evento</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Nombre)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Nombre)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Descripcion)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Descripcion)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Categoria)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Categoria)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FechaHora)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.FechaHora)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Ubicacion)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Ubicacion)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Precio)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Precio)
+        </dd>
+    </dl>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Eliminar definitivamente" class="btn btn-danger" /> |
+            @Html.ActionLink("Cancelar y volver a la lista", "Index", null, new { @class = "btn btn-secondary" })
+        </div>
+    }
+</div>

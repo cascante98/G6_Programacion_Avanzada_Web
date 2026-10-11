@@ -1,0 +1,26 @@
+﻿@model TicketEvents.Entities.Models.Evento
+
+<div class="col-sm-6 col-lg-4 mb-4">
+    <article class="card event-card h-100">
+        <a class="event-card-top has-image" href="@Url.Action("Detalle", "Evento", new { id = Model.EventoId })">
+            <img class="event-cover" src="@Url.Action("ImagenPrincipal", "Evento", new { id = Model.EventoId })"
+                 alt="Portada de @Model.Nombre" loading="lazy" />
+            <div class="event-cover-overlay"></div>
+            <span class="event-category">@Model.Categoria</span>
+            <span class="event-availability">@Model.EntradasDisponibles disponibles</span>
+        </a>
+        <div class="card-body d-flex flex-column">
+            <span class="event-code">@Model.Codigo</span>
+            <h2 class="card-title">
+                <a class="stretched-title" href="@Url.Action("Detalle", "Evento", new { id = Model.EventoId })">@Model.Nombre</a>
+            </h2>
+            <p class="event-description">@Model.Descripcion</p>
+            <div class="event-meta">
+                <p><span>Fecha</span><strong>@Model.FechaHora.ToString("dd/MM/yyyy HH:mm")</strong></p>
+                <p><span>Lugar</span><strong>@Model.Ubicacion</strong></p>
+            </div>
+            <div class="event-price">@Model.Precio.ToString("C")</div>
+            @Html.Partial("_AgregarCarrito", Model)
+        </div>
+    </article>
+</div>
